@@ -3,14 +3,40 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Image } from '@/types/image';
-import { images, getImagesByTag } from '@/lib/data';
+import { getImages, getImagesByTag } from '@/lib/data';
 import { ImageGrid } from '@/components/home/image-grid';
+import { useEffect, useState } from 'react';
 
 function SearchParamsInner() {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag');
+  const [images, setImages] = useState<Image[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredImages: Image[] = tag ? getImagesByTag(tag) : images;
+  useEffect(() => {
+    async function loadImages() {
+      setLoading(true);
+      try {
+        const allImages = await getImages();
+        const filteredImages = tag ? getImagesByTag(tag) : allImages;
+        setImages(filteredImages);
+      } catch (error) {
+        console.error('Error loading images:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadImages();
+  }, [tag]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -19,10 +45,10 @@ function SearchParamsInner() {
           {tag ? `#${tag}` : 'All Images'}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          {filteredImages.length} images found
+          {images.length} images found
         </p>
       </div>
-      <ImageGrid images={filteredImages} />
+      <ImageGrid images={images} />
     </div>
   );
 }
