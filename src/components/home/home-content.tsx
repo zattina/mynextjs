@@ -1,55 +1,16 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ImageGrid } from '@/components/home/image-grid';
 import { Image } from '@/types/image';
+import { images, getImagesByTag } from '@/lib/data';
+import { ImageGrid } from '@/components/home/image-grid';
 
 function ImageContent() {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag');
-  const [images, setImages] = useState<Image[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const response = await fetch('/api/images');
-        if (!response.ok) {
-          throw new Error('Failed to fetch images');
-        }
-        const data = await response.json();
-        setImages(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchImages();
-  }, []);
-
-  const filteredImages = tag
-    ? images.filter((image) => image.tags.includes(tag))
-    : images;
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center text-red-600">
-        <p>Error: {error}</p>
-      </div>
-    );
-  }
+  const filteredImages: Image[] = tag ? getImagesByTag(tag) : images;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -66,7 +27,7 @@ function ImageContent() {
   );
 }
 
-function SearchParamsWrapper() {
+export function HomeContent() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-64">
@@ -76,8 +37,4 @@ function SearchParamsWrapper() {
       <ImageContent />
     </Suspense>
   );
-}
-
-export function HomeContent() {
-  return <SearchParamsWrapper />;
 } 
