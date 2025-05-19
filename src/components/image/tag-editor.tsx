@@ -33,7 +33,7 @@ export function TagEditor({ tags, onTagsChange, isEditing, onEditToggle }: TagEd
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="space-y-2">
         <h3 className="text-lg font-semibold">タグ</h3>
         <Button
           variant="outline"
