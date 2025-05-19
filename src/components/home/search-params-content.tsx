@@ -1,11 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Image } from '@/types/image';
 import { images, getImagesByTag } from '@/lib/data';
 import { ImageGrid } from '@/components/home/image-grid';
 
-export function SearchParamsContent() {
+function SearchParamsInner() {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag');
 
@@ -23,5 +24,17 @@ export function SearchParamsContent() {
       </div>
       <ImageGrid images={filteredImages} />
     </div>
+  );
+}
+
+export function SearchParamsContent() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <SearchParamsInner />
+    </Suspense>
   );
 } 
