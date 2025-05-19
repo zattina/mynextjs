@@ -6,7 +6,7 @@ import { Image } from '@/types/image';
 import { images, getImagesByTag } from '@/lib/data';
 import { ImageGrid } from '@/components/home/image-grid';
 
-function ImageContent() {
+function SearchParamsContent() {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag');
 
@@ -34,7 +34,7 @@ export function HomeContent() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     }>
-      <ImageContent />
+      <SearchParamsContent />
     </Suspense>
   );
 } 
