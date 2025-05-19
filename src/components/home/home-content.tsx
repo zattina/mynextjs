@@ -66,7 +66,7 @@ function ImageContent() {
   );
 }
 
-export function HomeContent() {
+function SearchParamsWrapper() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-64">
@@ -76,4 +76,8 @@ export function HomeContent() {
       <ImageContent />
     </Suspense>
   );
+}
+
+export function HomeContent() {
+  return <SearchParamsWrapper />;
 } 
