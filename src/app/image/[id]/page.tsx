@@ -1,18 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { ImageDetail } from '@/components/detail/image-detail';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/types/image';
 import { Header } from '@/components/layout/header';
 import { Sidebar } from '@/components/layout/sidebar';
+import { TagEditor } from '@/components/image/tag-editor';
+import { toast } from 'sonner';
 
-export default function ImageDetailPage({ params }: { params: { id: string } }) {
+export default function ImageDetailPage() {
   const router = useRouter();
+  const params = useParams();
   const [image, setImage] = useState<Image | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
@@ -42,7 +46,7 @@ export default function ImageDetailPage({ params }: { params: { id: string } }) 
         setError(err instanceof Error ? err.message : 'エラーが発生しました');
       } finally {
         if (isMounted) {
-          setLoading(false);
+          setIsLoading(false);
         }
       }
     };
@@ -55,7 +59,31 @@ export default function ImageDetailPage({ params }: { params: { id: string } }) 
     };
   }, [params.id]);
   
-  if (loading) {
+  const handleTagsChange = async (newTags: string[]) => {
+    if (!image) return;
+
+    try {
+      const response = await fetch(`/api/images/${image.id}/tags`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tags: newTags }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update tags');
+      }
+
+      setImage({ ...image, tags: newTags });
+      toast.success('タグを更新しました');
+    } catch (error) {
+      console.error('Error updating tags:', error);
+      toast.error('タグの更新に失敗しました');
+    }
+  };
+
+  if (isLoading) {
     return (
       <>
         <Header />
@@ -116,6 +144,14 @@ export default function ImageDetailPage({ params }: { params: { id: string } }) 
           </div>
           
           <ImageDetail image={image} />
+          <div className="mt-8">
+            <TagEditor
+              tags={image.tags}
+              onTagsChange={handleTagsChange}
+              isEditing={isEditing}
+              onEditToggle={() => setIsEditing(!isEditing)}
+            />
+          </div>
         </div>
       </main>
     </>
