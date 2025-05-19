@@ -13,27 +13,36 @@ function SearchParamsInner() {
   const query = searchParams.get('q');
   const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadImages() {
       setLoading(true);
+      setError(null);
       try {
+        console.log('Fetching images...');
         const allImages = await getImages();
+        console.log('Fetched images:', allImages);
+        
         let filteredImages = allImages;
 
         // タグでフィルタリング
         if (tag) {
+          console.log('Filtering by tag:', tag);
           filteredImages = getImagesByTag(tag);
         }
 
         // 検索クエリでフィルタリング
         if (query) {
+          console.log('Filtering by query:', query);
           filteredImages = searchImages(filteredImages, query);
         }
 
+        console.log('Final filtered images:', filteredImages);
         setImages(filteredImages);
       } catch (error) {
         console.error('Error loading images:', error);
+        setError('画像の読み込みに失敗しました');
       } finally {
         setLoading(false);
       }
@@ -50,6 +59,29 @@ function SearchParamsInner() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
+
+  if (images.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">
+            {tag ? `#${tag}` : query ? `Search: ${query}` : 'All Images'}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            画像が見つかりませんでした
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -57,7 +89,7 @@ function SearchParamsInner() {
           {tag ? `#${tag}` : query ? `Search: ${query}` : 'All Images'}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          {images.length} images found
+          {images.length} 枚の画像が見つかりました
         </p>
       </div>
       <ImageGrid images={images} />
