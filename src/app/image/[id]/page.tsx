@@ -18,39 +18,36 @@ export default function ImageDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  const fetchImage = async () => {
+    try {
+      const response = await fetch(`/api/images/${params.id}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError('画像が見つかりませんでした');
+        } else {
+          throw new Error('画像の取得に失敗しました');
+        }
+        return;
+      }
+
+      const foundImage = await response.json();
+      setImage(foundImage);
+      document.title = `${foundImage.title} | PixelGram`;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'エラーが発生しました');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
 
-    const fetchImage = async () => {
-      try {
-        const response = await fetch(`/api/images/${params.id}`);
-        if (!isMounted) return;
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('画像が見つかりませんでした');
-          } else {
-            throw new Error('画像の取得に失敗しました');
-          }
-          return;
-        }
-
-        const foundImage = await response.json();
-        if (!isMounted) return;
-        
-        setImage(foundImage);
-        document.title = `${foundImage.title} | PixelGram`;
-      } catch (err) {
-        if (!isMounted) return;
-        setError(err instanceof Error ? err.message : 'エラーが発生しました');
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
+    const loadImage = async () => {
+      await fetchImage();
     };
 
-    fetchImage();
+    loadImage();
     
     return () => {
       isMounted = false;
@@ -74,7 +71,8 @@ export default function ImageDetailPage() {
         throw new Error('Failed to update tags');
       }
 
-      setImage({ ...image, tags: newTags });
+      // タグ更新後に画像情報を再取得
+      await fetchImage();
       toast.success('タグを更新しました');
     } catch (error) {
       console.error('Error updating tags:', error);
