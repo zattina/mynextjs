@@ -3,13 +3,14 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Image } from '@/types/image';
-import { getImages, getImagesByTag } from '@/lib/data';
+import { getImages, getImagesByTag, searchImages } from '@/lib/data';
 import { ImageGrid } from '@/components/home/image-grid';
 import { useEffect, useState } from 'react';
 
 function SearchParamsInner() {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag');
+  const query = searchParams.get('q');
   const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,7 +19,18 @@ function SearchParamsInner() {
       setLoading(true);
       try {
         const allImages = await getImages();
-        const filteredImages = tag ? getImagesByTag(tag) : allImages;
+        let filteredImages = allImages;
+
+        // タグでフィルタリング
+        if (tag) {
+          filteredImages = getImagesByTag(tag);
+        }
+
+        // 検索クエリでフィルタリング
+        if (query) {
+          filteredImages = searchImages(filteredImages, query);
+        }
+
         setImages(filteredImages);
       } catch (error) {
         console.error('Error loading images:', error);
@@ -28,7 +40,7 @@ function SearchParamsInner() {
     }
 
     loadImages();
-  }, [tag]);
+  }, [tag, query]);
 
   if (loading) {
     return (
@@ -42,7 +54,7 @@ function SearchParamsInner() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          {tag ? `#${tag}` : 'All Images'}
+          {tag ? `#${tag}` : query ? `Search: ${query}` : 'All Images'}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           {images.length} images found

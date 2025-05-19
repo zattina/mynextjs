@@ -56,8 +56,19 @@ export async function getImages(): Promise<Image[]> {
   return cloudinaryImages.length > 0 ? cloudinaryImages : images;
 }
 
+// タグで画像をフィルタリング
 export function getImagesByTag(tag: string): Image[] {
   return images.filter(image => image.tags.includes(tag));
+}
+
+// 検索クエリで画像をフィルタリング
+export function searchImages(images: Image[], query: string): Image[] {
+  const searchQuery = query.toLowerCase();
+  return images.filter(image => 
+    image.title.toLowerCase().includes(searchQuery) ||
+    image.description.toLowerCase().includes(searchQuery) ||
+    image.tags.some(tag => tag.toLowerCase().includes(searchQuery))
+  );
 }
 
 export function getImageById(id: string): Image | undefined {

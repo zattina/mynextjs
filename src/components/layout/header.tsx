@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Camera, Menu, X, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/ui/mode-toggle';
+import { Search } from '@/components/ui/search';
 import { cn } from '@/lib/utils';
 
 export function Header() {
@@ -29,61 +30,42 @@ export function Header() {
           : 'bg-transparent'
       )}
     >
-      <div className="container px-4 mx-auto">
+      <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center">
-              <Camera className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">PixelGram</span>
+          <div className="flex items-center space-x-4">
+            <Link href="/" className="flex items-center space-x-2">
+              <Camera className="h-6 w-6" />
+              <span className="font-bold text-xl">Image Gallery</span>
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link 
-              href="/" 
-              className="flex items-center text-gray-700 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 transition-colors"
-            >
-              <Home className="h-5 w-5 mr-1" />
-              <span>Home</span>
-            </Link>
-            <div className="flex items-center ml-4 space-x-2">
-              <ModeToggle />
-            </div>
-          </nav>
+          <div className="hidden md:flex items-center space-x-4 flex-1 justify-center">
+            <Search />
+          </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center space-x-2">
+          <div className="flex items-center space-x-4">
             <ModeToggle />
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-700 dark:text-gray-200"
             >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </Button>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 shadow-lg">
-          <div className="container px-4 mx-auto py-4">
-            <nav className="flex flex-col space-y-4">
-              <Link 
-                href="/" 
-                className="flex items-center text-gray-700 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 transition-colors py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <Home className="h-5 w-5 mr-2" />
-                <span>Home</span>
-              </Link>
-            </nav>
+        {isMobileMenuOpen && (
+          <div className="md:hidden py-4">
+            <Search />
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 } 
