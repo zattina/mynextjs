@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ImageGrid } from '@/components/home/image-grid';
 import { Image } from '@/types/image';
 
-export function HomeContent() {
+function ImageContent() {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag');
   const [images, setImages] = useState<Image[]>([]);
@@ -63,5 +63,17 @@ export function HomeContent() {
       </div>
       <ImageGrid images={filteredImages} />
     </div>
+  );
+}
+
+export function HomeContent() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <ImageContent />
+    </Suspense>
   );
 } 
