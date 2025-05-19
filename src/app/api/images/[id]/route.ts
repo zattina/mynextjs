@@ -16,42 +16,31 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    if (!params.id) {
-      return NextResponse.json(
-        { error: 'Image ID is required' },
-        { status: 400 }
-      );
-    }
+    const result = await cloudinary.api.resource(params.id, {
+      resource_type: 'image'
+    });
 
-    const result = await cloudinary.search
-      .expression(`public_id:${params.id}`)
-      .execute();
-
-    if (!result.resources.length) {
+    if (!result) {
       return NextResponse.json(
         { error: 'Image not found' },
         { status: 404 }
       );
     }
 
-    const resource = result.resources[0];
-    const image = {
-      id: resource.public_id,
-      title: resource.public_id.split('/').pop()?.split('.')[0] || resource.public_id,
-      description: resource.public_id,
-      url: resource.secure_url,
-      tags: resource.tags || [],
-      createdAt: resource.created_at,
-      width: resource.width,
-      height: resource.height,
+    return NextResponse.json({
+      id: result.public_id,
+      title: result.original_filename,
+      description: result.context?.description || '',
+      url: result.secure_url,
+      width: result.width,
+      height: result.height,
+      tags: result.tags || [],
+      createdAt: result.created_at,
       author: {
-        id: '1',
-        name: 'Artist',
-        avatar: resource.secure_url
+        name: result.context?.author || 'Unknown',
+        avatar: result.context?.author_avatar || ''
       }
-    };
-
-    return NextResponse.json(image);
+    });
   } catch (error) {
     console.error('Error fetching image:', error);
     return NextResponse.json(

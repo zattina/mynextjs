@@ -1,60 +1,44 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { ImageDetail } from '@/components/detail/image-detail';
-import { ChevronLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Image } from '@/types/image';
+import { useParams } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Sidebar } from '@/components/layout/sidebar';
+import { ImageDetail } from '@/components/detail/image-detail';
 import { toast } from 'sonner';
+import { Image } from '@/types/image';
 
 export default function ImageDetailPage() {
-  const router = useRouter();
   const params = useParams();
   const [image, setImage] = useState<Image | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  const fetchImage = async () => {
-    try {
-      const response = await fetch(`/api/images/${params.id}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          setError('画像が見つかりませんでした');
-        } else {
-          throw new Error('画像の取得に失敗しました');
-        }
-        return;
-      }
-
-      const foundImage = await response.json();
-      setImage(foundImage);
-      document.title = `${foundImage.title} | PixelGram`;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'エラーが発生しました');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const loadImage = async () => {
-      await fetchImage();
+    const fetchImage = async () => {
+      try {
+        const response = await fetch(`/api/images/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch image');
+        }
+        const data = await response.json();
+        setImage(data);
+      } catch (error) {
+        console.error('Error fetching image:', error);
+        setError('画像の取得に失敗しました');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    loadImage();
-    
-    return () => {
-      isMounted = false;
-      document.title = 'PixelGram';
-    };
+    fetchImage();
   }, [params.id]);
-  
+
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+  };
+
   const handleTagsChange = async (newTags: string[]) => {
     if (!image) return;
 
@@ -71,9 +55,9 @@ export default function ImageDetailPage() {
         throw new Error('Failed to update tags');
       }
 
-      // タグ更新後に画像情報を再取得
-      await fetchImage();
+      setImage(prev => prev ? { ...prev, tags: newTags } : null);
       toast.success('タグを更新しました');
+      setIsEditing(false);
     } catch (error) {
       console.error('Error updating tags:', error);
       toast.error('タグの更新に失敗しました');
@@ -82,72 +66,50 @@ export default function ImageDetailPage() {
 
   if (isLoading) {
     return (
-      <>
+      <div className="min-h-screen bg-gray-50">
         <Header />
-        <Sidebar />
-        <main className="pt-16 pl-64">
-          <div className="container px-4 mx-auto">
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="flex">
+          <Sidebar />
+          <main className="flex-1 p-8">
+            <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
             </div>
-          </div>
-        </main>
-      </>
+          </main>
+        </div>
+      </div>
     );
   }
 
-  if (error) {
+  if (error || !image) {
     return (
-      <>
+      <div className="min-h-screen bg-gray-50">
         <Header />
-        <Sidebar />
-        <main className="pt-16 pl-64">
-          <div className="container px-4 mx-auto">
-            <div className="text-center">
-              <p className="text-red-600 mb-4">{error}</p>
-              <Button 
-                variant="outline"
-                onClick={() => router.push('/')}
-              >
-                トップページに戻る
-              </Button>
+        <div className="flex">
+          <Sidebar />
+          <main className="flex-1 p-8">
+            <div className="text-center text-red-600">
+              {error || '画像が見つかりませんでした'}
             </div>
-          </div>
-        </main>
-      </>
+          </main>
+        </div>
+      </div>
     );
   }
-  
-  if (!image) {
-    return null;
-  }
-  
+
   return (
-    <>
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      <Sidebar />
-      <main className="pt-16 pl-64">
-        <div className="container px-4 mx-auto">
-          <div className="mb-6">
-            <Button 
-              variant="ghost"
-              size="sm"
-              className="flex items-center text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={() => router.push('/')}
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              トップページに戻る
-            </Button>
-          </div>
-          
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 p-8">
           <ImageDetail
             image={image}
             isEditing={isEditing}
-            onEditToggle={() => setIsEditing(!isEditing)}
+            onEditToggle={handleEditToggle}
             onTagsChange={handleTagsChange}
           />
-        </div>
-      </main>
-    </>
+        </main>
+      </div>
+    </div>
   );
 } 
