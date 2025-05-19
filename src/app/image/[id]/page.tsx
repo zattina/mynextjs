@@ -70,9 +70,11 @@ export default function ImageDetailPage() {
         <Header />
         <div className="flex">
           <Sidebar />
-          <main className="flex-1 p-8">
-            <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          <main className="flex-1 pt-16 pl-64">
+            <div className="container px-4 mx-auto">
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+              </div>
             </div>
           </main>
         </div>
@@ -86,9 +88,11 @@ export default function ImageDetailPage() {
         <Header />
         <div className="flex">
           <Sidebar />
-          <main className="flex-1 p-8">
-            <div className="text-center text-red-600">
-              {error || '画像が見つかりませんでした'}
+          <main className="flex-1 pt-16 pl-64">
+            <div className="container px-4 mx-auto">
+              <div className="text-center text-red-600">
+                {error || '画像が見つかりませんでした'}
+              </div>
             </div>
           </main>
         </div>
@@ -101,13 +105,15 @@ export default function ImageDetailPage() {
       <Header />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 p-8">
-          <ImageDetail
-            image={image}
-            isEditing={isEditing}
-            onEditToggle={handleEditToggle}
-            onTagsChange={handleTagsChange}
-          />
+        <main className="flex-1 pt-16 pl-64">
+          <div className="container px-4 mx-auto">
+            <ImageDetail
+              image={image}
+              isEditing={isEditing}
+              onEditToggle={handleEditToggle}
+              onTagsChange={handleTagsChange}
+            />
+          </div>
         </main>
       </div>
     </div>
