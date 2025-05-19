@@ -11,19 +11,31 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const result = await cloudinary.api.resource(params.id, {
+      resource_type: 'image'
+    });
+
+    return NextResponse.json(result.tags || []);
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch tags' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
     const { tags } = await request.json();
-    
-    if (!Array.isArray(tags)) {
-      return NextResponse.json(
-        { error: 'Tags must be an array' },
-        { status: 400 }
-      );
-    }
 
     // 既存のタグを取得
     const resource = await cloudinary.api.resource(params.id);
@@ -41,10 +53,7 @@ export async function PUT(
       await cloudinary.uploader.remove_tag(removedTags.join(','), [params.id]);
     }
 
-    return NextResponse.json({
-      success: true,
-      tags: tags
-    });
+    return NextResponse.json(tags);
   } catch (error) {
     console.error('Error updating tags:', error);
     return NextResponse.json(
