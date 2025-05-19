@@ -37,8 +37,9 @@ export async function GET(
       tags: result.tags || [],
       createdAt: result.created_at,
       author: {
+        id: '1',
         name: result.context?.author || 'Unknown',
-        avatar: result.context?.author_avatar || ''
+        avatar: result.secure_url
       }
     });
   } catch (error) {
