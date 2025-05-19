@@ -33,17 +33,6 @@ export function TagEditor({ tags, onTagsChange, isEditing, onEditToggle }: TagEd
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold">タグ</h3>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onEditToggle}
-        >
-          {isEditing ? '完了' : '編集'}
-        </Button>
-      </div>
-      
       <div className="flex flex-wrap gap-2">
         {tags.map((tag) => (
           <div
@@ -62,6 +51,14 @@ export function TagEditor({ tags, onTagsChange, isEditing, onEditToggle }: TagEd
           </div>
         ))}
       </div>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onEditToggle}
+      >
+        {isEditing ? '完了' : '編集'}
+      </Button>
 
       {isEditing && (
         <div className="flex gap-2">
