@@ -3,53 +3,59 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Image } from '@/types/image';
-import { getImages, getImagesByTag, searchImages } from '@/lib/data';
 import { ImageGrid } from '@/components/home/image-grid';
 import { useEffect, useState } from 'react';
+
+interface ApiResponse {
+  images: Image[];
+  next_cursor?: string;
+  total: number;
+}
 
 function SearchParamsInner() {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag');
-  const query = searchParams.get('q');
   const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function loadImages() {
+      if (!isMounted) return;
+      
       setLoading(true);
       setError(null);
       try {
-        console.log('Fetching images...');
-        const allImages = await getImages();
-        console.log('Fetched images:', allImages);
+        const params = new URLSearchParams();
+        if (tag) params.append('tag', tag);
         
-        let filteredImages = allImages;
+        const response = await fetch(`/api/images?${params.toString()}`);
+        if (!response.ok) throw new Error('画像の取得に失敗しました');
+        
+        const data: ApiResponse = await response.json();
+        if (!isMounted) return;
 
-        // タグでフィルタリング
-        if (tag) {
-          console.log('Filtering by tag:', tag);
-          filteredImages = getImagesByTag(tag);
-        }
-
-        // 検索クエリでフィルタリング
-        if (query) {
-          console.log('Filtering by query:', query);
-          filteredImages = searchImages(filteredImages, query);
-        }
-
-        console.log('Final filtered images:', filteredImages);
-        setImages(filteredImages);
+        setImages(data.images);
+        setTotal(data.total);
       } catch (error) {
-        console.error('Error loading images:', error);
+        if (!isMounted) return;
         setError('画像の読み込みに失敗しました');
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
     loadImages();
-  }, [tag, query]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [tag]);
 
   if (loading) {
     return (
@@ -72,7 +78,7 @@ function SearchParamsInner() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
-            {tag ? `#${tag}` : query ? `Search: ${query}` : 'All Images'}
+            {tag ? `#${tag}` : 'All Images'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             画像が見つかりませんでした
@@ -86,10 +92,10 @@ function SearchParamsInner() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          {tag ? `#${tag}` : query ? `Search: ${query}` : 'All Images'}
+          {tag ? `#${tag}` : 'All Images'}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          {images.length} 枚の画像が見つかりました
+          {total} 枚の画像が見つかりました
         </p>
       </div>
       <ImageGrid images={images} />

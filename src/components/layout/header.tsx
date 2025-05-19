@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Camera, Menu, X, Home } from 'lucide-react';
+import { Camera, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/ui/mode-toggle';
-import { Search } from '@/components/ui/search';
 import { cn } from '@/lib/utils';
 
 export function Header() {
@@ -33,14 +32,10 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <Camera className="h-6 w-6" />
               <span className="font-bold text-xl">Image Gallery</span>
             </Link>
-          </div>
-
-          <div className="hidden md:flex items-center space-x-4 flex-1 justify-center">
-            <Search />
           </div>
 
           <div className="flex items-center space-x-4">
@@ -59,12 +54,6 @@ export function Header() {
             </Button>
           </div>
         </div>
-
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4">
-            <Search />
-          </div>
-        )}
       </div>
     </header>
   );

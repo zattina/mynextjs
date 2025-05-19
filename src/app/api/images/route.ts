@@ -11,44 +11,40 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    console.log('Fetching images from Cloudinary...');
-    console.log('Cloud name:', process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME);
-    
-    const result = await cloudinary.search
-      .expression('resource_type:image')
-      .sort_by('created_at', 'desc')
-      .max_results(100)
-      .execute();
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const tag = searchParams.get('tag');
+    const query = searchParams.get('q');
 
-    console.log('Cloudinary response:', result);
-
-    if (!result.resources || result.resources.length === 0) {
-      console.log('No images found in Cloudinary, returning fallback image');
-      return NextResponse.json([{
-        id: '1',
-        title: 'Gahag-0009010510',
-        description: 'Beautiful artwork',
-        url: 'https://res.cloudinary.com/demgahuqo/image/upload/v1747607089/gahag-0009010510-1_bpmzdj.png',
-        tags: ['art', 'illustration'],
-        createdAt: '2024-03-20T10:00:00Z',
-        width: 1920,
-        height: 1080,
-        author: {
-          id: '1',
-          name: 'Artist',
-          avatar: 'https://res.cloudinary.com/demgahuqo/image/upload/v1747607089/gahag-0009010510-1_bpmzdj.png'
-        }
-      }]);
+    let expression = 'resource_type:image';
+    if (tag) {
+      expression += ` AND tags:${tag}`;
+    }
+    if (query) {
+      const escapedQuery = query.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      expression += ` AND public_id=*${escapedQuery}*`;
     }
 
-    const images = result.resources.map((resource: any, index: number) => ({
-      id: (index + 1).toString(),
-      title: resource.public_id.split('/').pop()?.split('.')[0] || `Image ${index + 1}`,
-      description: 'Beautiful artwork from our collection',
+    console.log('Search expression:', expression);
+
+    const result = await cloudinary.search
+      .expression(expression)
+      .sort_by('created_at', 'desc')
+      .max_results(limit)
+      .next_cursor(page > 1 ? searchParams.get('next_cursor') : undefined)
+      .execute();
+
+    console.log('Search results:', result);
+
+    const images = result.resources.map((resource: any) => ({
+      id: resource.public_id,
+      title: resource.public_id.split('/').pop()?.split('.')[0] || resource.public_id,
+      description: resource.public_id,
       url: resource.secure_url,
-      tags: resource.tags || ['art', 'illustration'],
+      tags: resource.tags || [],
       createdAt: resource.created_at,
       width: resource.width,
       height: resource.height,
@@ -59,25 +55,16 @@ export async function GET() {
       }
     }));
 
-    console.log('Processed images:', images);
-    return NextResponse.json(images);
+    return NextResponse.json({
+      images,
+      next_cursor: result.next_cursor,
+      total: result.total_count
+    });
   } catch (error) {
-    console.error('Error fetching images from Cloudinary:', error);
-    // エラー時はフォールバック画像を返す
-    return NextResponse.json([{
-      id: '1',
-      title: 'Gahag-0009010510',
-      description: 'Beautiful artwork',
-      url: 'https://res.cloudinary.com/demgahuqo/image/upload/v1747607089/gahag-0009010510-1_bpmzdj.png',
-      tags: ['art', 'illustration'],
-      createdAt: '2024-03-20T10:00:00Z',
-      width: 1920,
-      height: 1080,
-      author: {
-        id: '1',
-        name: 'Artist',
-        avatar: 'https://res.cloudinary.com/demgahuqo/image/upload/v1747607089/gahag-0009010510-1_bpmzdj.png'
-      }
-    }]);
+    console.error('Error fetching images:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch images' },
+      { status: 500 }
+    );
   }
 } 

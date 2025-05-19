@@ -79,7 +79,7 @@ export function Sidebar() {
             <div className="space-y-2">
               <Button
                 variant="ghost"
-                className={`w-full justify-start ${isCollapsed ? 'px-2' : 'px-4'}`}
+                className={`w-full justify-start ${isCollapsed ? 'px-2' : 'px-4'} hover:bg-gray-100 dark:hover:bg-gray-800`}
                 onClick={() => router.push('/')}
               >
                 <Home className={`h-5 w-5 ${isCollapsed ? 'mx-auto' : 'mr-2'}`} />

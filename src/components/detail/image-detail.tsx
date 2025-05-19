@@ -1,6 +1,7 @@
 import { Image } from '@/types/image';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
+import NextImage from 'next/image';
 
 interface ImageDetailProps {
   image: Image;
@@ -10,10 +11,13 @@ export function ImageDetail({ image }: ImageDetailProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-        <img
+        <NextImage
           src={image.url}
           alt={image.title}
-          className="object-cover w-full h-full"
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          className="object-cover"
+          priority
         />
       </div>
       
@@ -29,11 +33,14 @@ export function ImageDetail({ image }: ImageDetailProps) {
         
         {image.author && (
           <div className="flex items-center space-x-4">
-            <img
-              src={image.author.avatar}
-              alt={image.author.name}
-              className="w-10 h-10 rounded-full"
-            />
+            <div className="relative w-10 h-10">
+              <NextImage
+                src={image.author.avatar}
+                alt={image.author.name}
+                fill
+                className="rounded-full object-cover"
+              />
+            </div>
             <div>
               <p className="font-medium text-gray-900 dark:text-white">
                 {image.author.name}
