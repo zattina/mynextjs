@@ -2,12 +2,16 @@ import { Image } from '@/types/image';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import NextImage from 'next/image';
+import { TagEditor } from '@/components/image/tag-editor';
 
 interface ImageDetailProps {
   image: Image;
+  isEditing: boolean;
+  onEditToggle: () => void;
+  onTagsChange: (newTags: string[]) => void;
 }
 
-export function ImageDetail({ image }: ImageDetailProps) {
+export function ImageDetail({ image, isEditing, onEditToggle, onTagsChange }: ImageDetailProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
@@ -52,15 +56,14 @@ export function ImageDetail({ image }: ImageDetailProps) {
           </div>
         )}
         
-        <div className="space-y-2">
+        <div className="space-y-4">
           <h3 className="font-medium text-gray-900 dark:text-white">Tags</h3>
-          <div className="flex flex-wrap gap-2">
-            {image.tags.map((tag) => (
-              <Badge key={tag} variant="secondary">
-                #{tag}
-              </Badge>
-            ))}
-          </div>
+          <TagEditor
+            tags={image.tags}
+            onTagsChange={onTagsChange}
+            isEditing={isEditing}
+            onEditToggle={onEditToggle}
+          />
         </div>
       </div>
     </div>

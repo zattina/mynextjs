@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Image } from '@/types/image';
 import { Header } from '@/components/layout/header';
 import { Sidebar } from '@/components/layout/sidebar';
-import { TagEditor } from '@/components/image/tag-editor';
 import { toast } from 'sonner';
 
 export default function ImageDetailPage() {
@@ -143,15 +142,12 @@ export default function ImageDetailPage() {
             </Button>
           </div>
           
-          <ImageDetail image={image} />
-          <div className="mt-8">
-            <TagEditor
-              tags={image.tags}
-              onTagsChange={handleTagsChange}
-              isEditing={isEditing}
-              onEditToggle={() => setIsEditing(!isEditing)}
-            />
-          </div>
+          <ImageDetail
+            image={image}
+            isEditing={isEditing}
+            onEditToggle={() => setIsEditing(!isEditing)}
+            onTagsChange={handleTagsChange}
+          />
         </div>
       </main>
     </>
