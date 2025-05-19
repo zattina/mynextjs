@@ -18,6 +18,7 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const tag = searchParams.get('tag');
     const query = searchParams.get('q');
+    const nextCursor = searchParams.get('next_cursor') || undefined;
 
     let expression = 'resource_type:image';
     if (tag) {
@@ -34,7 +35,7 @@ export async function GET(request: Request) {
       .expression(expression)
       .sort_by('created_at', 'desc')
       .max_results(limit)
-      .next_cursor(page > 1 ? searchParams.get('next_cursor') : undefined)
+      .next_cursor(page > 1 ? nextCursor : undefined)
       .execute();
 
     console.log('Search results:', result);
